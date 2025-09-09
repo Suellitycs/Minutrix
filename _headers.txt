@@ -1,0 +1,3 @@
+/admin/*
+  Basic-Auth: suelly:Suellytics2025 Visitante:Minuta2025
+  X-Robots-Tag: noindex, nofollow
