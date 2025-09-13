@@ -23,11 +23,10 @@
   .tab{padding:8px 14px;border-radius:12px;border:1px solid var(--border);background:#0b141b;color:#b8c7d3;cursor:pointer;transition:.15s}
   .tab:hover{transform:translateY(-1px)}
   .tab.active{background:var(--accent);color:#00110f;border-color:transparent;box-shadow:0 8px 30px rgba(20,198,183,.25)}
-  .grid{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr))}
   .k{background:linear-gradient(180deg,#0d1620,#0a1015);border:1px solid var(--border);padding:14px;border-radius:14px}
   .k .t{color:var(--muted);font-size:12px;margin-bottom:6px}
   .k .v{font-weight:900;font-size:28px}
-  .k .chip{display:inline-block;padding:2px 8px;border-radius:9999px;border:1px solid #14343b;background:rgba(20,198,183,.1);color:#93fff1;font-size:12px;margin-left:6px}
   #err{display:none;margin:12px 0;padding:10px;border:1px solid #733040;background:#451b26;color:#ffdbe1;border-radius:12px}
   .controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
   input,select{background:#0b141b;border:1px solid var(--border);color:#e8f2ff;padding:9px 10px;border-radius:10px}
@@ -42,20 +41,26 @@
   .ok{background:rgba(29,233,182,.12);color:#9bffe6}
   .warn{background:rgba(255,209,102,.12);color:#ffe3a6}
   .bad{background:rgba(255,92,119,.12);color:#ffc1cc}
-  .muted{color:var(--muted)}
   .tabv{animation:fade .15s ease}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  /* Power BI responsivo */
+
+  /* VINHETA */
+  #intro_overlay{position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:9999;}
+  #intro_overlay iframe{width:100%; height:100%; border:0}
+
+  /* Power BI responsivo (ACRESCENTADO) */
   .bi-frame{position:relative;padding-top:56.25%;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0b141b}
   .bi-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  /* subtabs na Tabela */
-  .subnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
-  .subtab{padding:6px 10px;border-radius:9999px;border:1px solid var(--border);background:#0b141b;color:#8fb0c1;cursor:pointer}
-  .subtab.active{background:#11242d;color:#dbf9ff;border-color:#1f3844}
 </style>
+
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
+<!-- Vinheta (mantida) -->
+<div id="intro_overlay">
+  <iframe src="minutrix_intro_neon_plus_6s.html" title="Minutrix Intro"></iframe>
+</div>
+
 <header class="wrap">
   <div class="brand">
     <img id="logo" alt="Logo">
@@ -67,8 +72,8 @@
   <nav>
     <button class="tab active" data-tab="painel">Painel</button>
     <button class="tab" data-tab="tabela">Tabela</button>
+    <!-- Botão do Power BI (ACRESCENTADO) -->
     <button class="tab" data-tab="bi">Power BI</button>
-    <button class="tab" data-tab="diag">Diagnóstico</button>
   </nav>
 </header>
 
@@ -77,30 +82,21 @@
 
   <!-- PAINEL -->
   <section id="painel" class="tabv" style="display:block">
-  <div class="grid">
-    <div class="k"><div class="t">Registros</div><div id="k_total" class="v">—</div></div>
-    <div class="k"><div class="t">Dentro do prazo</div><div id="k_ok" class="v">—</div></div>
-    <div class="k"><div class="t">Fora do prazo</div><div id="k_late" class="v">—</div></div>
-    <div class="k"><div class="t">% no prazo</div><div id="k_pct" class="v">—</div></div>
-  </div>
-
-  <!-- NOVO: Gráfico quantidade por advogado -->
-  <div class="k" style="margin-top:12px">
-    <div class="t">Quantidade por Advogado</div>
-    <div id="chart_adv" style="height:380px"></div>
-  </div>
-</section>
-
-  <!-- TABELA (colunas enxutas) -->
-  <section id="tabela" class="tabv" style="display:none">
-    <!-- SUB-ABAS: Advogado · Cliente · Situação (Hoje) -->
-    <div class="subnav">
-      <button class="subtab active" data-sub="all">Todos</button>
-      <button class="subtab" data-sub="adv">Advogado</button>
-      <button class="subtab" data-sub="cli">Cliente</button>
-      <button class="subtab" data-sub="sit">Situação (Hoje)</button>
+    <div class="grid">
+      <div class="k"><div class="t">Registros</div><div id="k_total" class="v">—</div></div>
+      <div class="k"><div class="t">Dentro do prazo</div><div id="k_ok" class="v">—</div></div>
+      <div class="k"><div class="t">Fora do prazo</div><div id="k_late" class="v">—</div></div>
+      <div class="k"><div class="t">% Fora do prazo</div><div id="k_pct_out" class="v">—</div></div>
+      <div class="k"><div class="t">% Dentro do prazo</div><div id="k_pct_in" class="v">—</div></div>
     </div>
+    <div class="k" style="margin-top:12px">
+      <div class="t">Quantidade por Advogado</div>
+      <div id="chart_adv" style="height:380px"></div>
+    </div>
+  </section>
 
+  <!-- TABELA -->
+  <section id="tabela" class="tabv" style="display:none">
     <div class="controls" id="controls_all" style="display:flex">
       <input id="q" placeholder="Buscar: ID, prazo, advogado, cliente..."/>
       <select id="f_adv"><option value="">Advogado: Todos</option></select>
@@ -109,35 +105,20 @@
         <option value="">Situação (Hoje): Todas</option>
         <option value="OK">OK</option>
         <option value="A_VENCER">A_VENCER</option>
+        <option value="HOJE">HOJE</option>
         <option value="VENCIDO">VENCIDO</option>
       </select>
+      <!-- Filtro pela DESCRIÇÃO do prazo (mantido) -->
+      <select id="f_tipo"><option value="">Descrição do Prazo: Todos</option></select>
+      <input id="f_de_from" type="date" title="Data de Envio - De"/>
+      <input id="f_de_to"   type="date" title="Data de Envio - Até"/>
       <button id="filtrar" class="primary">Filtrar</button>
       <button id="limpar">Limpar</button>
     </div>
 
-    <div class="controls" id="controls_adv" style="display:none">
-      <select id="f_adv_only"><option value="">Advogado: Todos</option></select>
-      <button id="filtrar_adv" class="primary">Aplicar</button>
-    </div>
-
-    <div class="controls" id="controls_cli" style="display:none">
-      <select id="f_cli_only"><option value="">Cliente: Todos</option></select>
-      <button id="filtrar_cli" class="primary">Aplicar</button>
-    </div>
-
-    <div class="controls" id="controls_sit" style="display:none">
-      <select id="f_sit_only">
-        <option value="">Situação (Hoje): Todas</option>
-        <option value="OK">OK</option>
-        <option value="A_VENCER">A_VENCER</option>
-        <option value="VENCIDO">VENCIDO</option>
-      </select>
-      <button id="filtrar_sit" class="primary">Aplicar</button>
-    </div>
-
     <table>
       <thead><tr>
-        <th>ID</th><th>Prazo</th><th>Advogado</th><th>Cliente</th>
+        <th>ID</th><th>Descrição do Prazo</th><th>Advogado</th><th>Cliente</th>
         <th>Data Fatal</th><th>Data Envio</th><th>SLA</th><th>DU</th><th>Hoje</th>
       </tr></thead>
       <tbody id="tb"></tbody>
@@ -145,17 +126,12 @@
     <div id="rows" class="muted" style="margin-top:6px">—</div>
   </section>
 
-  <!-- POWER BI -->
+  <!-- POWER BI (ACRESCENTADO) -->
   <section id="bi" class="tabv" style="display:none">
     <div class="k" style="margin-bottom:12px"><div class="t">Dashboard</div>
-      <div class="chip">Power BI</div>
+      <div class="badge" style="border-radius:8px">Power BI</div>
     </div>
     <div class="bi-frame"><iframe id="bi_iframe" loading="lazy" allowfullscreen></iframe></div>
-  </section>
-
-  <!-- DIAGNÓSTICO -->
-  <section id="diag" class="tabv" style="display:none">
-    <div class="k" id="diagBox" style="white-space:pre-wrap"></div>
   </section>
 </main>
 
@@ -164,84 +140,53 @@
 const SHEET_ID   = '1iGdB-aGM5xh0cJx5IdhGHzRYlAOU15HqhR-Lohlv3KI';
 const GID        = '1935308703';
 const GVIZ_URL   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tq=select%20*`;
+/* URL do Power BI (ACRESCENTADO) */
 const POWERBI_URL= 'https://app.powerbi.com/view?r=eyJrIjoiYTM1N2IxZGMtOTFiNC00YzViLTk3OTEtOTY3YzRmNWFiOTEyIiwidCI6IjM2NDZmODI0LWFjNDQtNDViNC1hNjllLTQ0YWI1MTBmNmFhZiJ9';
-// --- LOGO MINUTRIX embutida (SVG) ---
+
+/* LOGO (mantida) */
 const LOGO_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#14c6b7"/>
-      <stop offset="1" stop-color="#1de9b6"/>
-    </linearGradient>
-  </defs>
-  <rect x="1.5" y="1.5" width="61" height="61" rx="12" ry="12"
-        fill="#0b141b" stroke="#1f3844" stroke-width="3"/>
-  <path d="M14 46 L14 18 L26 36 L38 18 L38 46"
-        fill="none" stroke="url(#g)" stroke-width="6"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#14c6b7"/><stop offset="1" stop-color="#1de9b6"/></linearGradient></defs>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12" ry="12" fill="#0b141b" stroke="#1f3844" stroke-width="3"/>
+  <path d="M14 46 L14 18 L26 36 L38 18 L38 46" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="48" cy="22" r="3.8" fill="url(#g)"/>
 </svg>`;
 const LOGO_URL = 'data:image/svg+xml;utf8,' + encodeURIComponent(LOGO_SVG);
+document.getElementById('logo').src = LOGO_URL;
+document.getElementById('favicon').href = LOGO_URL;
 
-// aplica no header e no favicon
-const logoEl = document.getElementById('logo');
-if (logoEl) logoEl.src = LOGO_URL;
-const fav = document.getElementById('favicon');
-if (fav) fav.href = LOGO_URL;
+/* ===== Helpers ===== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 
-/* ===== UI ===== */
-const $  = s=>document.querySelector(s);
-const $$ = s=>Array.from(document.querySelectorAll(s));
-if ($('#logo')) { if (LOGO_URL) $('#logo').src = LOGO_URL; else $('#logo').style.display='none'; }
-$$('.tab').forEach(b=> b.addEventListener('click',()=>{
-  $$('.tab').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  $$('.tabv').forEach(v=> v.style.display = (v.id===b.dataset.tab?'block':'none'));
-  if (b.dataset.tab==='bi') { const f=$('#bi_iframe'); if(f && !f.src) f.src = POWERBI_URL; } // lazy-load BI
-}));
-
-// Sub-abas da Tabela
-const subViews = {
-  all:  ['controls_all'],
-  adv:  ['controls_adv'],
-  cli:  ['controls_cli'],
-  sit:  ['controls_sit']
-};
-$$('.subtab').forEach(b=> b.addEventListener('click',()=>{
-  $$('.subtab').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  const target=b.dataset.sub;
-  Object.values(subViews).flat().forEach(id=> $('#'+id).style.display='none');
-  (subViews[target]||[]).forEach(id=> $('#'+id).style.display='flex');
-}));
-
-/* ===== Google Loader ===== */
-google.charts.load('current', {'packages':[]});
-google.charts.setOnLoadCallback(loadGViz);
-
-/* ===== Estado ===== */
 const S = {rows:[], filtered:[]};
-const F = {q:'',adv:'',cli:'',hoje:''};
+const F = {q:'',adv:'',cli:'',hoje:'', tipo:'', de_from:null, de_to:null};
 
-/* ===== Datas & SLA (inalterado) ===== */
 function toDate(v){ if(!v) return null; if(v instanceof Date) return v;
   const s=String(v).trim(), m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if(m){ const d=+m[1], mo=+m[2]-1, y=m[3].length===2?2000+ +m[3]:+m[3]; return new Date(y,mo,d); }
-  const n=Number(s); if(!isNaN(n)&&n>20000&&n<10000000000000) return new Date(n);
+  const n=Number(s); if(!isNaN(n) && n>20000 && n<10000000000000) return new Date(n);
   const d=new Date(s); return isNaN(d)? null : d;
 }
-function bizDiff(a,b){ if(!a||!b) return null; const A=new Date(a),B=new Date(b);
-  let d=0, dir=A<=B?1:-1, cur=new Date(A); cur.setHours(12,0,0,0); B.setHours(12,0,0,0);
-  while((dir>0&&cur<B)||(dir<0&&cur>B)){ cur.setDate(cur.getDate()+dir); const w=cur.getDay(); if(w!==0&&w!==6) d+=dir; }
+function bizDiff(a,b){
+  if(!a||!b) return null;
+  const A=new Date(a), B=new Date(b);
+  let d=0, dir=A<=B?1:-1, cur=new Date(A);
+  cur.setHours(12,0,0,0); B.setHours(12,0,0,0);
+  while((dir>0&&cur<B)||(dir<0&&cur>B)){
+    cur.setDate(cur.getDate()+dir);
+    const w=cur.getDay(); if(w!==0&&w!==6) d+=dir;
+  }
   return d;
 }
 function classify(r){
-  const du=bizDiff(r.data_envio,r.data_fatal);
+  const du=bizDiff(r.data_envio,r.data_fatal);             // regra BI: DU >= 2 => dentro
   const sla= du==null?'—': du>=2?'D-2':du===1?'D-1':du===0?'D0':`D+${Math.abs(du)}`;
   const today=new Date(); today.setHours(12,0,0,0);
   const df=r.data_fatal? new Date(r.data_fatal): null; if(df) df.setHours(12,0,0,0);
   const delta=df? bizDiff(today,df): null;
-  const hoje= delta==null? '—' : (delta<0?'VENCIDO' : (delta<=2?'A_VENCER':'OK'));
+  const hoje= delta==null? '—' : (delta<0?'VENCIDO' : (delta===0?'HOJE' : (delta<=2?'A_VENCER':'OK')));
   return {du,sla,hoje};
 }
 function pick(obj, keys){
@@ -252,19 +197,34 @@ function pick(obj, keys){
   } return '';
 }
 
-/* ===== Carga (GViz JSONP) ===== */
+/* ===== Abas (mantidas) + lazy-load do BI (ACRESCENTADO) ===== */
+$$('.tab').forEach(b=> b.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  $$('.tabv').forEach(v=> v.style.display = (v.id===b.dataset.tab?'block':'none'));
+  if (b.dataset.tab==='bi'){ const f=$('#bi_iframe'); if(f && !f.src) f.src = POWERBI_URL; }
+}));
+
+/* ===== Google Charts ===== */
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(loadGViz);
+
+/* ===== Carga via GViz ===== */
 function loadGViz(){
   const q = new google.visualization.Query(GVIZ_URL);
   q.send(resp=>{
-    if(resp.isError()){ fail(`GViz error: ${resp.getMessage()}`); return; }
+    if(resp.isError()){
+      const e=$('#err'); if(e){ e.style.display='block'; e.textContent='Erro ao carregar planilha: '+resp.getMessage(); }
+      return;
+    }
     const data = resp.getDataTable();
     const cols = Array.from({length:data.getNumberOfColumns()}, (_,i)=> data.getColumnLabel(i) || data.getColumnId(i));
-    const rows = Array.from({length:data.getNumberOfRows()}, (_,r)=> { const o={}; cols.forEach((c,i)=>o[c]=data.getValue(r,i) ?? ''); return o; });
+    const rows = Array.from({length:data.getNumberOfRows()}, (_,r)=>{ const o={}; cols.forEach((c,i)=>o[c]=data.getValue(r,i) ?? ''); return o; });
 
-    // mapear só as colunas essenciais (as datas que você pediu para tirar NÃO entram)
+    // mapeia colunas mantendo seu visual
     S.rows = rows.map(r=>({
       id:        pick(r,['id prazo','id']),
-      prazo:     pick(r,['prazo (descrição)','descrição do prazo','prazo','descricao']),
+      prazo:     pick(r,['Descrição do Prazo','prazo (descrição)','descrição do prazo','descricao do prazo','descricao','prazo']),
       advogado:  pick(r,['executor do prazo','advogado','responsável','executor']),
       cliente:   pick(r,['cliente']),
       data_fatal:toDate(pick(r,['data fatal','prazo fatal','data do prazo','data limite'])),
@@ -274,62 +234,63 @@ function loadGViz(){
 
     S.filtered=[...S.rows];
     hydrateFilters();
-    render();drawAdvChart();
-
-    const info=['Fonte GViz: '+GVIZ_URL,'','Colunas detectadas:',...cols.map(c=>'• '+c)].join('\n');
-    const box=document.getElementById('diagBox'); if(box) box.textContent=info;
+    render();
+    drawAdvChart();
   });
+
+  // vinheta some sozinha
+  setTimeout(()=>{ const ov=$('#intro_overlay'); if(ov) ov.style.display='none'; }, 6200);
 }
 
 /* ===== Filtros ===== */
 function hydrateFilters(){
   const advs=[...new Set(S.rows.map(r=>r.advogado).filter(Boolean))].sort();
-  const clis=[...new Set(S.rows.map(r=>r.cliente).filter(Boolean))].sort();
-  const selAdv=$('#f_adv'), selCli=$('#f_cli'), selAdvOnly=$('#f_adv_only'), selCliOnly=$('#f_cli_only');
+  const clis=[...new Set(S.rows.map(r=>r.cliente ).filter(Boolean))].sort();
 
-  const advOpts = '<option value="">Advogado: Todos</option>'+advs.map(v=>`<option>${v}</option>`).join('');
-  const cliOpts = '<option value="">Cliente: Todos</option>'+clis.map(v=>`<option>${v}</option>`).join('');
-  if(selAdv) selAdv.innerHTML = advOpts;
-  if(selCli) selCli.innerHTML = cliOpts;
-  if(selAdvOnly) selAdvOnly.innerHTML = advOpts.replace('Advogado: Todos','Todos');
-  if(selCliOnly) selCliOnly.innerHTML = cliOpts.replace('Cliente: Todos','Todos');
+  if($('#f_adv')) $('#f_adv').innerHTML = '<option value="">Advogado: Todos</option>'+advs.map(v=>`<option>${v}</option>`).join('');
+  if($('#f_cli')) $('#f_cli').innerHTML = '<option value="">Cliente: Todos</option>'+clis.map(v=>`<option>${v}</option>`).join('');
+
+  // preencher combo pela **Descrição do Prazo** (AGORA GARANTIDO)
+  const prazos=[...new Set(S.rows.map(r=>{
+    const p=(r.prazo??'').toString().trim();
+    return p.replace(/\s+/g,' '); // normaliza espaços pra evitar duplicatas "quase" iguais
+  }).filter(Boolean))].sort((a,b)=> a.localeCompare(b,'pt-BR'));
+  if($('#f_tipo')) $('#f_tipo').innerHTML =
+    '<option value="">Descrição do Prazo: Todos</option>' + prazos.map(v=>`<option>${v}</option>`).join('');
 }
+
 function applyFilters(){
-  // sub-abas podem sobrescrever os filtros
-  const activeSub = document.querySelector('.subtab.active')?.dataset.sub || 'all';
-  if(activeSub==='adv'){
-    F.q=''; F.cli=''; F.hoje='';
-    F.adv = $('#f_adv_only')?.value||'';
-  }else if(activeSub==='cli'){
-    F.q=''; F.adv=''; F.hoje='';
-    F.cli = $('#f_cli_only')?.value||'';
-  }else if(activeSub==='sit'){
-    F.q=''; F.adv=''; F.cli='';
-    F.hoje = $('#f_sit_only')?.value||'';
-  }else{ // all
-    F.q   = ($('#q')?.value||'').toLowerCase();
-    F.adv = $('#f_adv')?.value||'';
-    F.cli = $('#f_cli')?.value||'';
-    F.hoje= $('#f_hoje')?.value||'';
-  }
+  F.q     = ($('#q')?.value||'').toLowerCase();
+  F.adv   = $('#f_adv')?.value||'';
+  F.cli   = $('#f_cli')?.value||'';
+  F.hoje  = $('#f_hoje')?.value||'';
+  F.tipo  = $('#f_tipo')?.value||'';
+  const vFrom=$('#f_de_from')?.value||'';
+  const vTo=$('#f_de_to')?.value||'';
+  F.de_from = vFrom? new Date(vFrom+'T12:00:00'):null;
+  F.de_to   = vTo? new Date(vTo+'T12:00:00'):null;
 }
 
 /* ===== Render ===== */
 function render(){
   applyFilters();
+
   S.filtered = S.rows.filter(r=>{
-    if(F.q && !`${r.id} ${r.prazo} ${r.advogado} ${r.cliente}`.toLowerCase().includes(F.q)) return false;
+    if(F.q   && !`${r.id} ${r.prazo} ${r.advogado} ${r.cliente}`.toLowerCase().includes(F.q)) return false;
     if(F.adv && r.advogado!==F.adv) return false;
-    if(F.cli && r.cliente!==F.cli) return false;
-    if(F.hoje && r.hoje!==F.hoje) return false;
+    if(F.cli && r.cliente !==F.cli) return false;
+    if(F.hoje&& r.hoje    !==F.hoje) return false;
+    if(F.tipo&& (r.prazo||'')!==F.tipo) return false;
+    if(F.de_from && (!r.data_envio || r.data_envio < F.de_from)) return false;
+    if(F.de_to   && (!r.data_envio || r.data_envio > F.de_to))   return false;
     return true;
   });
 
-  const tb = $('#tb'); tb.innerHTML='';
+  const tb=$('#tb'); tb.innerHTML='';
   S.filtered.forEach(r=>{
-    const badge = r.hoje==='OK'?'ok':(r.hoje==='A_VENCER'?'warn':'bad');
-    const tr=document.createElement('tr'); tr.className = badge==='ok'?'row-ok':(badge==='warn'?'row-warn':'row-bad');
-    tr.innerHTML = `<td>${r.id||''}</td><td>${r.prazo||''}</td><td>${r.advogado||''}</td><td>${r.cliente||''}</td>
+    const badge=r.hoje==='OK'?'ok':(r.hoje==='A_VENCER'?'warn':'bad');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id||''}</td><td>${r.prazo||''}</td><td>${r.advogado||''}</td><td>${r.cliente||''}</td>
       <td>${r.data_fatal? r.data_fatal.toLocaleDateString('pt-BR'):''}</td>
       <td>${r.data_envio? r.data_envio.toLocaleDateString('pt-BR'):''}</td>
       <td><span class="badge ${badge}">${r.sla}</span></td>
@@ -338,16 +299,64 @@ function render(){
     tb.appendChild(tr);
   });
 
-  const total=S.filtered.length, late=S.filtered.filter(x=>x.hoje==='VENCIDO').length, ok=total-late;
-  $('#k_total').textContent=total;
-  $('#k_ok').textContent=ok;
-  $('#k_late').textContent=late;
-  $('#k_pct').textContent= total? Math.round(ok*100/total)+'%':'—';
-  $('#rows').textContent = `${S.filtered.length} de ${S.rows.length} linhas`;
+  const total  = S.filtered.length;
+  const dentro = S.filtered.filter(r=>r.du!=null && r.du>=2).length;
+  const fora   = S.filtered.filter(r=>r.du!=null && r.du<2).length;
+
+  $('#k_total').textContent   = total;
+  $('#k_ok').textContent      = dentro;
+  $('#k_late').textContent    = fora;
+  $('#k_pct_in').textContent  = total? Math.round(dentro*100/total)+'%' : '—';
+  $('#k_pct_out').textContent = total? Math.round(fora*100/total)+'%'   : '—';
+  $('#rows').textContent      = `${S.filtered.length} de ${S.rows.length} linhas`;
+
+  drawAdvChart();
 }
 
-/* ===== Eventos ===== */
-function fail(msg){ const e=$('#err'); if(e){ e.textContent='Erro: '+msg; e.style.display='block'; } }
+/* ===== Gráfico por advogado (empilhado Dentro x Fora) ===== */
+function drawAdvChart(){
+  if (!window.google || !google.visualization) return;
+
+  const base = (S.filtered && S.filtered.length ? S.filtered : S.rows) || [];
+  const counts = {}; // { adv: {in: x, out: y} }
+
+  base.forEach(r=>{
+    const adv = (r.advogado && String(r.advogado).trim()) || '—';
+    if(!counts[adv]) counts[adv] = {in:0, out:0};
+    if (r.du == null) return;       // sem DU, ignora no gráfico
+    if (r.du >= 2) counts[adv].in  += 1;
+    else           counts[adv].out += 1;
+  });
+
+  const rows = Object.entries(counts)
+    .map(([k,v])=> [k, v.in, v.out, v.in+v.out])
+    .sort((a,b)=> b[3]-a[3])                  // ordena por total
+    .map(([k,vin,vout])=> [k, vin, vout]);    // remove total
+
+  const data = new google.visualization.DataTable();
+  data.addColumn('string','Advogado');
+  data.addColumn('number','Dentro do prazo');
+  data.addColumn('number','Fora do prazo');
+  data.addRows(rows);
+
+  const el = document.getElementById('chart_adv');
+  if (!el) return;
+  const chart = new google.visualization.BarChart(el);
+
+  chart.draw(data, {
+    backgroundColor: 'transparent',
+    isStacked: true,
+    legend: { position: 'top', textStyle:{color:'#9fb0bf'} },
+    chartArea: { left: 160, top: 30, width: '70%', height: '75%' },
+    focusTarget: 'category',
+    bar: { groupWidth: '80%' },
+    hAxis: { textStyle:{color:'#9fb0bf'}, gridlines:{color:'#1b2a36'} },
+    vAxis: { textStyle:{color:'#9fb0bf'} },
+    colors: ['#1de9b6', '#ff5c77'] // dentro / fora
+  });
+}
+
+/* ===== Ações ===== */
 document.addEventListener('click',e=>{
   if(e.target?.id==='filtrar') render();
   if(e.target?.id==='limpar'){
@@ -355,11 +364,11 @@ document.addEventListener('click',e=>{
     if($('#f_adv')) $('#f_adv').value='';
     if($('#f_cli')) $('#f_cli').value='';
     if($('#f_hoje')) $('#f_hoje').value='';
+    if($('#f_tipo')) $('#f_tipo').value='';
+    if($('#f_de_from')) $('#f_de_from').value='';
+    if($('#f_de_to')) $('#f_de_to').value='';
     render();
   }
-  if(e.target?.id==='filtrar_adv') render();
-  if(e.target?.id==='filtrar_cli') render();
-  if(e.target?.id==='filtrar_sit') render();
 });
 </script>
 </body>
