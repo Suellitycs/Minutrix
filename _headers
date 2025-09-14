@@ -1,3 +1,16 @@
-/admin/*
+/* 
   Basic-Auth: suelly:Suellytics2025 Visitante:Minuta2025
   X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), usb=(), payment=()
+  Content-Security-Policy: \
+    default-src 'self'; \
+    img-src 'self' data: https:; \
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; \
+    font-src 'self' https://fonts.gstatic.com data:; \
+    script-src 'self' 'unsafe-inline' https: https://www.gstatic.com https://www.google.com https://ajax.googleapis.com; \
+    connect-src 'self' https://docs.google.com https://www.googleapis.com https://script.googleusercontent.com https://app.powerbi.com; \
+    frame-src https://app.powerbi.com; \
+    frame-ancestors 'none';
