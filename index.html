@@ -42,7 +42,10 @@
   .b-blue{background:rgba(92,168,255,.12);color:#d7e7ff;border-color:#2b5ea7}
   .tabv{animation:fade .15s ease}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  #intro_overlay{position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:9999;}
+  #intro_overlay{position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:9999; transition:opacity .4s ease}
+  #intro_overlay.hide{opacity:0; pointer-events:none}
+  #intro_skip{position:absolute; right:16px; top:16px; background:#14c6b7; color:#00110f; border:none; border-radius:999px; padding:8px 12px; font-weight:700; cursor:pointer}
+  #intro_overlay iframe{width:100%; height:100%; border:0}
   #intro_overlay iframe{width:100%; height:100%; border:0}
   .bi-frame{position:relative;padding-top:56.25%;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0b141b}
   .bi-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -58,7 +61,7 @@
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-<div id="intro_overlay">
+<div id="intro_overlay"><button id="intro_skip" type="button">Pular intro</button>
   <iframe src="minutrix_intro_neon_plus_6s.html" title="Minutrix Intro"></iframe>
 </div>
 <header class="wrap">
@@ -166,6 +169,47 @@ function classify(r){
 function pick(obj,keys){for(const k of keys){if(obj[k]!=null&&obj[k]!=='')return obj[k];const f=Object.keys(obj).find(x=>x.toLowerCase().includes(k.toLowerCase()));if(f)return obj[f];}return '';}
 $$('.tab').forEach(b=>b.addEventListener('click',()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tabv').forEach(v=>v.style.display=(v.id===b.dataset.tab?'block':'none'));if(b.dataset.tab==='bi'){const f=$('#bi_iframe');if(f&&!f.src)f.src=POWERBI_URL;}}));
 google.charts.load('current',{'packages':['corechart']});google.charts.setOnLoadCallback(loadGViz);
+
+// ===== vinheta robusta =====
+(function(){
+  const ov = document.getElementById('intro_overlay');
+  const skip = document.getElementById('intro_skip');
+  if(!ov){ return; }
+  const INTRO_MS = 4500;          // duração padrão
+  const FAILSAFE_MS = 9000;       // garante saída mesmo se algo falhar
+
+  function hideIntro(){
+    if(!ov || ov.classList.contains('hide')) return;
+    ov.classList.add('hide');
+    setTimeout(()=>{ try{ ov.remove(); }catch(e){} }, 500);
+  }
+
+  // Preferências do usuário / query param para pular
+  const urlParams = new URLSearchParams(location.search);
+  if (urlParams.has('nointro') || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    hideIntro();
+    return;
+  }
+
+  // Clique na overlay ou botão para pular
+  ov.addEventListener('click', hideIntro);
+  if (skip) skip.addEventListener('click', e=>{ e.stopPropagation(); hideIntro(); });
+
+  // Teclas ESC ou espaço também pulam
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape' || e.key === ' '){ hideIntro(); }
+  });
+
+  // Se o iframe carregar, mantém o tempo padrão e oculta depois
+  const fr = ov.querySelector('iframe');
+  if (fr){
+    fr.addEventListener('load', ()=> setTimeout(hideIntro, INTRO_MS));
+  }
+
+  // Failsafe: some de qualquer jeito
+  setTimeout(hideIntro, FAILSAFE_MS);
+})();
+
 function loadGViz(){const q=new google.visualization.Query(GVIZ_URL);q.send(resp=>{if(resp.isError()){const e=$('#err');if(e){e.style.display='block';e.textContent='Erro ao carregar planilha: '+resp.getMessage();}return;}const data=resp.getDataTable();const cols=Array.from({length:data.getNumberOfColumns()},(_,i)=>data.getColumnLabel(i)||data.getColumnId(i));const rows=Array.from({length:data.getNumberOfRows()},(_,r)=>{const o={};cols.forEach((c,i)=>o[c]=data.getValue(r,i)??'');return o;});S.rows=rows.map(r=>({id:pick(r,['id prazo','id']),prazo:pick(r,['Descrição do Prazo','prazo (descrição)','descrição do prazo','descricao do prazo','descricao','prazo']),advogado:pick(r,['executor do prazo','advogado','responsável','executor']),cliente:pick(r,['cliente']),data_fatal:toDate(pick(r,['data fatal','prazo fatal','data do prazo','data limite'])),data_envio:toDate(pick(r,['data envio','envio de minuta','data do envio','data de envio','envio'])),status_src:pick(r,['status do prazo','status'])})).map(r=>Object.assign(r, classify(r))).filter(r=>r.id||r.prazo||r.advogado||r.cliente);hydrateFilters();render();});setTimeout(()=>{const ov=$('#intro_overlay');if(ov)ov.style.display='none';},6200);}
 function hydrateFilters(){const advs=[...new Set(S.rows.map(r=>r.advogado).filter(Boolean))].sort();const clis=[...new Set(S.rows.map(r=>r.cliente).filter(Boolean))].sort();if($('#f_adv'))$('#f_adv').innerHTML='<option value="">Advogado: Todos</option>'+advs.map(v=>`<option>${v}</option>`).join('');if($('#f_cli'))$('#f_cli').innerHTML='<option value="">Cliente: Todos</option>'+clis.map(v=>`<option>${v}</option>`).join('');const prazos=[...new Set(S.rows.map(r=>String((r.prazo??'')).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));if($('#f_tipo'))$('#f_tipo').innerHTML='<option value="">Descrição do Prazo: Todos</option>'+prazos.map(v=>`<option>${v}</option>`).join('');}
 function applyFilters(){F.q=($('#q')?.value||'').toLowerCase();F.adv=$('#f_adv')?.value||'';F.cli=$('#f_cli')?.value||'';F.hoje=$('#f_hoje')?.value||'';F.tipo=$('#f_tipo')?.value||'';const vf=$('#f_de_from')?.value||'';const vt=$('#f_de_to')?.value||'';F.de_from=vf?new Date(vf+'T12:00:00'):null;F.de_to=vt?new Date(vt+'T12:00:00'):null;}
